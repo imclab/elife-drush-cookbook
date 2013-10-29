@@ -18,8 +18,9 @@
 case node[:platform]
 when "debian", "ubuntu"
   git "/usr/share/drush" do
-    repository "git://git.drupal.org/project/drush.git"
-    reference "7.x-5.x"
+    ## alternative: git@github.com:drush-ops/drush.git
+    repository "https://github.com/drush-ops/drush.git"
+    reference "master"
     action :sync
   end
   

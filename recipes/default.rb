@@ -15,16 +15,35 @@
 # limitations under the License.
 #
 
+# Updated Oct 2013 RIC: replace old (wget ftp) fetch of drush 4.5 with
+# modified head.rb code to fetch from drush github repo which is the
+# current home of drush.
+
+# This version fetches a named branch; head.rb fetches the "master".
+
+repo_ref = "6.x"
+
 case node[:platform]
 when "debian", "ubuntu"
-  bash "install-drush" do
+  git "/usr/share/drush" do
+    ## alternative: git@github.com:drush-ops/drush.git 
+    repository "https://github.com/drush-ops/drush.git" 
+    reference repo_ref
+    action :sync
+  end
+  
+  bash "make-drush-symlink" do
     code <<-EOH
-(cd /tmp; wget http://ftp.drupal.org/files/projects/drush-7.x-4.5.tar.gz)
-(cd /tmp; tar zxvf drush-7.x-4.5.tar.gz)
-(cd /tmp; mv drush /usr/share/)
-(ln -s /usr/share/drush/drush /usr/bin/drush)
-(pear install Console_Table)
+    (ln -s /usr/share/drush/drush /usr/bin/drush)
     EOH
-    not_if { File.exists?("/usr/share/drush/drush") }
+    not_if { File.exists?("/usr/bin/drush") }
+    only_if { File.exists?("/usr/share/drush/drush") }
+  end
+
+  bash "install-console-table" do
+    code <<-EOH
+    (pear install Console_Table)
+    EOH
+    not_if "pear list| grep Console_Table"
   end
 end
